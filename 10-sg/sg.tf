@@ -38,4 +38,13 @@ module "bastion_sg" {
   common_tags = var.common_tags
 }
 
+module "app_alb_sg" {
+  source = "git::https://github.com/AbduL-Riyaz1/terraform-aws-securitygroup.git?ref=main"
+  project_name = var.project_name
+  environment = var.environment
+  sg_name = "app-alb-sg"
+  sg_discription = "created for Backend ALB in expense dev"
+  vpc_id = data.aws_ssm_parameter.vpc_id.value
+  common_tags = var.common_tags
+}
 
