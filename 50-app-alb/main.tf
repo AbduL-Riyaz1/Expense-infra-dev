@@ -8,6 +8,7 @@ module "alb" {
   subnets = local.private_subnet_ids
   create_security_group = false
   security_groups = [local.app_alb_sg_id]
+  enable_deletion_protection = false
 
   
   tags =merge(
@@ -18,14 +19,31 @@ module "alb" {
   )
 }
 
-/* resource "aws_lb_listener" "HTTP" {
-  load_balancer_arn = aws_lb.front_end.arn
+resource "aws_lb_listener" "HTTP" {
+  load_balancer_arn = module.alb.arn
   port              = "80"
-  protocol          = "HTTPS"
-  ssl_policy        = "ELBSecurityPolicy-2016-08"
-  certificate_arn   = "arn:aws:iam::187416307283:server-certificate/test_cert_rab3wuqwgja25ct3n4jdj2tzu4"
+  protocol          = "HTTP"
+
 
   default_action {
-    type             = "forward"
-    target_group_arn = aws_lb_target_group.front_end.arn 
-  }*/
+    type = "fixed-response"
+
+    fixed_response {
+      content_type = "text/html"
+      message_body = "<h1> hello, iam from backend ALB </h1>"
+      status_code  = "200"
+    }
+  }
+}
+
+resource "aws_route53_record" "app_alb" {
+  zone_id = var.zone_id
+  name    = "*.app-dev.${var.domain_name}"
+  type    = "A"
+# these are ALB DNS name and zone information
+  alias {
+    name                   = module.alb.dns_name
+    zone_id                = module.alb.zone_id
+    evaluate_target_health = false
+  }
+}
