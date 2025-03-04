@@ -12,3 +12,7 @@ variable "common_tags" {
     terraform = true
   }
 }
+
+variable "domain_name" {
+    default = "ardev.space"
+}
